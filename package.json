@@ -1,0 +1,39 @@
+{
+  "name": "vue-events-delegate",
+  "version": "0.0.1",
+  "description": "DOM Event delegate in Vue",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "event",
+    "delegate",
+    "DOM",
+    "vue"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/xiaoboost/vue-events-delegate.git"
+  },
+  "author": "xiaoboost",
+  "license": "MIT",
+  "devDependencies": {
+    "@types/chai": "^4.0.8",
+    "@types/mocha": "^2.2.44",
+    "chai": "^4.1.2",
+    "css-loader": "^0.28.7",
+    "mocha": "^4.0.1",
+    "shelljs": "^0.7.8",
+    "rollup": "^0.52.0",
+    "rollup-plugin-replace": "^2.0.0",
+    "testdouble": "^3.2.6",
+    "ts-loader": "^3.2.0",
+    "typescript": "^2.6.2",
+    "uglify-js": "^3.2.1",
+    "vue": "^2.5.9",
+    "vue-loader": "^13.5.0",
+    "vue-template-compiler": "^2.5.9",
+    "webpack": "^3.10.0"
+  }
+}
