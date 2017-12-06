@@ -15,7 +15,7 @@
         // 允许从没有设置默认导出的模块中默认导入
         "allowSyntheticDefaultImports": true,
         // 将每个文件作为单独的模块
-        "isolatedModules": true,
+        "isolatedModules": false,
         // 启用装饰器
         "experimentalDecorators": true,
         // 在表达式和声明上有隐含的 any 类型时报错
