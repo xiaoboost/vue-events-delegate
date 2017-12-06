@@ -1,8 +1,12 @@
 export interface Modifiers {
-    self?: boolean;
-    left?: boolean;
-    right?: boolean;
-    esc?: boolean;
-    enter?: boolean;
-    once?: boolean;
+    [key: string]: boolean;
+
+    self: boolean;
+    left: boolean;
+    right: boolean;
+    esc: boolean;
+    enter: boolean;
+    once: boolean;
+    stop: boolean;
+    prevent: boolean;
 }

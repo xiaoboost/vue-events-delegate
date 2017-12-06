@@ -57,3 +57,5 @@ export interface DelegateKeyEvent extends DelegateInputEvent {
 }
 
 export interface DelegateEvent extends BaseDelegateEvent, DelegateInputEvent, DelegateMouseEvent, DelegateKeyEvent {}
+
+export type DelegateCallback = (e: DelegateEvent) => any;
