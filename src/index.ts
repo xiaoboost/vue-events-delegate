@@ -1,7 +1,7 @@
 import { add, remove } from './delegate';
 import { fixOnParams, fixOffParams, fnWrapper } from './parameter';
 
-import { VueConstructor } from 'vue/types/vue';
+import { Vue, VueConstructor } from 'vue/types/vue';
 import { VNodeDirective } from 'vue/types/vnode';
 import { DelegateEvent, DelegateCallback, Modifiers } from 'types';
 
@@ -24,10 +24,11 @@ function fixType(type: string): string {
 }
 
 export default {
-    install(Vue: VueConstructor) {
-        Vue.directive('delegate', {
+    install(App: VueConstructor) {
+        App.directive('delegate', {
             bind(el: HTMLElement, binding: VNodeDirective): void {
-                const params = fixOnParams(binding.arg, binding.value[0], binding.value[1]);
+                const value = (binding.value instanceof Array) ? binding.value : [binding.value];
+                const params = fixOnParams(binding.arg, value[0], value[1]);
                 const handler = fnWrapper(params.fn, binding.modifiers as Modifiers);
                 const type = fixType(params.type);
 
@@ -35,7 +36,8 @@ export default {
                 add(el, type, params.selector, handler);
             },
             unbind(el: HTMLElement, binding: VNodeDirective): void {
-                const params = fixOnParams(binding.arg, binding.value[0], binding.value[1]);
+                const value = (binding.value instanceof Array) ? binding.value : [binding.value];
+                const params = fixOnParams(binding.arg, value[0], value[1]);
                 const handler = fnWrapper(params.fn, binding.modifiers as Modifiers);
                 const type = fixType(params.type);
 
@@ -44,12 +46,14 @@ export default {
             },
         });
 
-        Vue.prototype.delegateOn = () => {
+        App.prototype.delegateOn = function(el: HTMLElement, type: string, selector: string | DelegateCallback, fn: DelegateCallback | Modifiers, option?: Modifiers): Vue {
 
+            return this;
         };
 
-        Vue.prototype.delegateOff = () => {
+        App.prototype.delegateOff = function(el?: HTMLElement, type?: string, selector?: string, fn?: DelegateCallback): Vue {
 
+            return this;
         };
     },
 };
