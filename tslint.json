@@ -1,6 +1,6 @@
 {
     "defaultSeverity": "error",
-    "extends":"tslint:recommended",
+    "extends": "tslint:recommended",
     "rules": {
         // 类定义时，不需要写出 public 关键字
         "member-access": [true, "no-public"],
