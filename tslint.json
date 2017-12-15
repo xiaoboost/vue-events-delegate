@@ -106,6 +106,8 @@
         // 左大括号和空格必须和前面的语句在同一行
         // "check-catch", "check-finally", "check-else" 三项不检查
         "one-line": [true, "check-open-brace", "check-whitespace"],
+        // for...in 循环的时候不强制过滤
+        "forin": false,
 
         // need type Checking
         // 禁止变量在 declare 之前使用
