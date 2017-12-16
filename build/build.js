@@ -7,7 +7,8 @@ const fs = require('fs'),
     spawn = require('child_process').spawn,
     replace = require('rollup-plugin-replace'),
     project = require('../package.json'),
-    output = resolve('dist');
+    output = resolve('dist'),
+    json = require('json5');
 
 const banner =
 `/**
@@ -90,10 +91,21 @@ function write(dest, code) {
     });
 }
 
+function read(dest) {
+    return new Promise((resolve, reject) => {
+        fs.readFile(dest, (err, data) => {
+            if (err) {
+                return reject(err);
+            }
+
+            resolve(data.toString());
+        });
+    });
+}
+
 console.log('\x1Bc');
 console.log(chalk.yellow('> Start Compile:\n'));
-shell.rm('-rf', output);
-shell.mkdir('-p', output);
+shell.rm('-rf', path.join(output, '*'));
 
 async function main() {
     await promiseSpawn('node', 'node_modules/typescript/lib/tsc.js', '-p', '.');
@@ -115,6 +127,9 @@ async function main() {
 
         await write(output.file, code);
     }
+
+    const tsconfig = await read(resolve('tsconfig.json'));
+    shell.rm('-rf', resolve(json.parse(tsconfig).compilerOptions.outDir));
 }
 
 main();

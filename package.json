@@ -24,6 +24,7 @@
   "license": "MIT",
   "devDependencies": {
     "@types/chai": "^4.0.10",
+    "@types/json5": "0.0.29",
     "@types/koa": "^2.0.43",
     "@types/mocha": "^2.2.44",
     "@types/shelljs": "^0.7.7",
@@ -31,6 +32,7 @@
     "css-loader": "^0.28.7",
     "eslint": "^4.13.1",
     "friendly-errors-webpack-plugin": "^1.6.1",
+    "json5": "^0.5.1",
     "koa": "^2.4.1",
     "koa-static": "^4.0.2",
     "mocha": "^4.0.1",
