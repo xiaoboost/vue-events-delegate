@@ -50,7 +50,8 @@ abstract class Delegate {
 
     // methods
     getModifierState(keyArg: string): boolean {
-        return this._originalEvent.getModifierState(keyArg);
+        type fn = (key: string) => boolean;
+        return (this._originalEvent.getModifierState as fn)(keyArg);
     }
 }
 
