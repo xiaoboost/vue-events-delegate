@@ -12,9 +12,10 @@ const functionMap = new Map<$Callback, $Callback>();
  * Wrapper the function
  * @param {$Callback} callback
  * @param {Modifiers} modifiers
+ * @param {(() => void)} once
  * @returns {$Callback}
  */
-export function fnWrapper(callback: $Callback, modifiers: Modifiers): $Callback {
+export function fnWrapper(callback: $Callback, modifiers: Modifiers, once?: () => void): $Callback {
     return function packFn(event: $Event) {
         let self = true, left = true, right = true, esc = true, enter = true;
 
@@ -34,8 +35,6 @@ export function fnWrapper(callback: $Callback, modifiers: Modifiers): $Callback 
             enter = event.key === 'Enter';
         }
 
-        // TODO: once
-
         if (self && left && right && esc && enter) {
             const ans = callback(event);
 
@@ -44,6 +43,9 @@ export function fnWrapper(callback: $Callback, modifiers: Modifiers): $Callback 
             }
             if (modifiers.prevent) {
                 event.preventDefault();
+            }
+            if (modifiers.once && once) {
+                setTimeout(once);
             }
 
             return ans;
@@ -66,29 +68,44 @@ function fixType(type: string): string {
     return match[0];
 }
 
+/**
+ * directive bind event
+ * @param {HTMLElement} el
+ * @param {VNodeDirective} binding
+ */
+function bind(el: HTMLElement, binding: VNodeDirective): void {
+    const value = (binding.value instanceof Array) ? binding.value : ['', binding.value];
+
+    const [selector, callback] = value as [string, $Callback];
+    const handler = fnWrapper(callback, binding.modifiers, () => unbind(el, binding));
+    const type = fixType(binding.arg);
+
+    functionMap.set(callback, handler);
+    add(el, type, selector, handler, binding.modifiers.capture);
+}
+
+/**
+ * directive unbind event
+ * @param {HTMLElement} el
+ * @param {VNodeDirective} binding
+ */
+function unbind(el: HTMLElement, binding: VNodeDirective): void {
+    const value = (binding.value instanceof Array) ? binding.value : ['', binding.value];
+
+    const [selector, callback] = value as [string, $Callback];
+    const handler = functionMap.get(callback);
+    const type = fixType(binding.arg);
+
+    functionMap.delete(callback);
+    remove(el, type, selector, handler);
+}
+
 export default {
     install(App: VueConstructor) {
         App.directive('delegate', {
-            bind(el: HTMLElement, binding: VNodeDirective): void {
-                const value = (binding.value instanceof Array) ? binding.value : ['', binding.value];
-
-                const [selector, callback] = value as [string, $Callback];
-                const handler = fnWrapper(callback, binding.modifiers);
-                const type = fixType(binding.arg);
-
-                functionMap.set(callback, handler);
-                add(el, type, selector, handler, binding.modifiers.capture);
-            },
-            unbind(el: HTMLElement, binding: VNodeDirective): void {
-                const value = (binding.value instanceof Array) ? binding.value : ['', binding.value];
-
-                const [selector, callback] = value as [string, $Callback];
-                const handler = fnWrapper(callback, binding.modifiers);
-                const type = fixType(binding.arg);
-
-                functionMap.delete(callback);
-                remove(el, type, selector, handler, binding.modifiers.capture);
-            },
+            bind,
+            unbind,
+            // TODO: update event
         });
 
         App.prototype.delegateOn = function(el: HTMLElement, type: string, selector: string | $Callback, fn: $Callback | Modifiers, option?: Modifiers): Vue {
@@ -96,7 +113,7 @@ export default {
             return this;
         };
 
-        App.prototype.delegateOff = function(el?: HTMLElement, type?: string, selector?: string, fn?: $Callback): Vue {
+        App.prototype.delegateOff = function(el: HTMLElement, type?: string, selector?: string, fn?: $Callback): Vue {
 
             return this;
         };

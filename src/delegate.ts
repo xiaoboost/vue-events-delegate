@@ -9,16 +9,15 @@ interface SelectorParsed {
 
 interface ElementData {
     events: EventsObj;
-    capture: boolean;
     handler(e: Event): void;
 }
 
 interface HandlerQueueObj {
     element: HTMLElement;
-    environment: HandlerObj;
+    environment: HandlerEnv;
 }
 
-interface HandlerObj {
+interface HandlerEnv {
     type: string;
     selector: string;
     capture: boolean;
@@ -28,7 +27,11 @@ interface HandlerObj {
 }
 
 interface EventsObj {
-    [x: string]: HandlerObj[];
+    [x: string]: {
+        data: HandlerEnv[];
+        capture: boolean;
+        bubble: boolean;
+    };
 }
 
 /** delegate Data Global Cache */
@@ -72,10 +75,10 @@ function paserSelector(all: string): SelectorParsed[] {
  * match dom
  * @param {HTMLElement} delegate
  * @param {HTMLElement} elem
- * @param {HandlerObj} handler
+ * @param {HandlerEnv} handler
  * @returns {boolean}
  */
-function isContains(delegate: HTMLElement, elem: HTMLElement, handler: HandlerObj): boolean {
+function isContains(delegate: HTMLElement, elem: HTMLElement, handler: HandlerEnv): boolean {
     // dom has been in selector cache
     if (handler.matches.includes(elem)) {
         return (true);
@@ -102,44 +105,41 @@ function isContains(delegate: HTMLElement, elem: HTMLElement, handler: HandlerOb
 
 /**
  * Wraps the callback function that satisfies the condition into a queue along the event path
- * @param {HTMLElement} elem
  * @param {$Event} event
  * @param {boolean} capture
  * @param {HandlerObj[]} handlers
  * @returns {HandlerQueueObj[]}
  */
-function tohandlers(elem: HTMLElement, event: $Event, handlers: HandlerObj[]): HandlerQueueObj[] {
-    // create path, from target to elem
-    const path: HTMLElement[] = [];
-    for (let i = event.target; i !== event.currentTarget && i.parentElement; i = i.parentElement) {
-        path.push(i);
-    }
-    path.push(event.currentTarget);
-    path.reverse();
-
+function tohandlers(event: $Event, handlers: HandlerEnv[]): HandlerQueueObj[] {
+    // event.currentTarget is delegate dom
+    const elem = event.currentTarget;
+    // is phase of event the capture at now
     const capture = (event.eventPhase === 1);
 
-    // 委托元素本身的事件
-    const handlerQueue: HandlerQueueObj[] = handlers
-        .filter((n) => !n.selector && n.capture === capture)
-        .map((n) => ({ element: elem, environment: n }));
+    // create path, from target to elem
+    const path: HTMLElement[] = [];
+    for (let i = event.target; i !== elem && i.parentElement; i = i.parentElement) {
+        path.push(i);
+    }
+    path.push(elem);
 
-    // 沿着委托元素向下
-    for (let i = path.length - 1; i >= 0; i--) {
-        // 若节点不是 Node.ELEMENT_NODE，则跳过
-        if (path[i].nodeType !== 1) {
+    // check events along the path
+    const handlerQueue: HandlerQueueObj[] = [];
+    for (const dom of path) {
+        // the type of node must be  Node.ELEMENT_NODE
+        if (dom.nodeType !== 1) {
             continue;
         }
 
         handlerQueue.push(
             ...handlers
-                .filter((n) => n.selector && n.capture === capture && isContains(elem, path[i], n))
-                .map((n) => ({ element: path[i], environment: n })),
+                .filter((n) => n.selector && n.capture === capture && isContains(elem, dom, n))
+                .map((n) => ({ element: dom, environment: n })),
         );
     }
 
-    // if event is not capture, then reverse queue of handler
-    if (!capture) {
+    // if phase of event is capture, then reverse queue of handler
+    if (capture) {
         handlerQueue.reverse();
     }
 
@@ -162,7 +162,7 @@ function dispatch(elem: HTMLElement, origin: Event): void {
     }
 
     event.delegateTarget = elem;
-    const handlerQueue = tohandlers(elem, event, elemhandlers);
+    const handlerQueue = tohandlers(event, elemhandlers.data);
 
     handlerQueue.some((handlerObj: HandlerQueueObj) => {
         const fn = handlerObj.environment.callback;
@@ -200,10 +200,10 @@ function dispatch(elem: HTMLElement, origin: Event): void {
 export function add(elem: HTMLElement, types: string, selector: string, callback: $Callback, capture: boolean = false): void {
     // get data of current dom
     let elemData = $Cache.get(elem) as ElementData;
+
     // if there is no data, then create
     if (utils.isNull(elemData)) {
         elemData = {
-            capture,
             events: {},
             handler: (event: Event): void => dispatch(elem, event),
         };
@@ -213,35 +213,46 @@ export function add(elem: HTMLElement, types: string, selector: string, callback
     const events = elemData.events;
 
     // split events and bind
-    (types.match(/\S+/g) || ['']).forEach((type) => {
+    (types.match(/\S+/g) || []).forEach((type) => {
         if (!type) {
             return;
         }
 
         // create handler object
-        const handlerObj: HandlerObj = {
-            type,
-            callback,
-            selector,
-            capture,
+        const handlerEnv: HandlerEnv = {
+            type, callback, selector, capture,
             characteristic: paserSelector(selector),
             matches: selector ? Array.from(elem.querySelectorAll(selector)) : [],
         };
 
         // if this event is defined first time
         if (!events[type]) {
-            events[type] = [];
+            events[type] = {
+                data: [],
+                bubble: false,
+                capture: false,
+            };
+        }
+
+        const typeData = events[type];
+
+        // if there have duplicates selector, then cover it; otherwise add it to the end
+        if (typeData.data.every((handler, i, arr) =>
+            (selector === handler.selector && capture === handler.capture)
+                ? (arr[i] = handlerEnv, false)
+                : true,
+        )) {
+            typeData.data.push(handlerEnv);
         }
 
         // bind the origin event
-        if (events[type].every((handler) => handler.capture !== capture)) {
-            elem.addEventListener(type, elemData.handler, capture);
+        if (!typeData.capture && capture) {
+            elem.addEventListener(type, elemData.handler, true);
+            typeData.capture = true;
         }
-
-        // TODO: 需要提高可读性
-        // if there have duplicates selector, then cover it; no duplicates, then add to the end
-        if (!(events[type].some((n, i, arr) => (selector === n.selector) && (capture === n.capture) && (Boolean(arr[i] = handlerObj))))) {
-            events[type].push(handlerObj);
+        if (!typeData.bubble && !capture) {
+            elem.addEventListener(type, elemData.handler, false);
+            typeData.bubble = true;
         }
     });
 }
@@ -249,12 +260,11 @@ export function add(elem: HTMLElement, types: string, selector: string, callback
 /**
  * Remove the delegate event
  * @param {object} elem
- * @param {string} types
- * @param {string} selector
- * @param {$Callback} callback
- * @param {boolean} [capture]
+ * @param {string} [types]
+ * @param {string} [selector]
+ * @param {($Callback | false)} [callback]
  */
-export function remove(elem: HTMLElement, types?: string, selector?: string, fn?: $Callback, capture: boolean = false): void {
+export function remove(elem: HTMLElement, types: string = '', selector: string = '*', fn: $Callback | false = false): void {
     const elemData = $Cache.get(elem);
     const events = elemData && elemData.events;
 
@@ -264,42 +274,48 @@ export function remove(elem: HTMLElement, types?: string, selector?: string, fn?
     }
 
     // split event type
-    let typeArr = (types || '').match(/\S+/g);
+    let typeArr = types.match(/\S+/g);
 
     // type is none, delete all types data
     if (!typeArr) {
         typeArr = Object.keys(events);
     }
 
-    if (typeArr.length > 1) {
-        typeArr.forEach((item) => remove(elem, item, selector, fn));
-        return;
-    }
+    typeArr.forEach((type) => {
+        const typeData = events[type];
 
-    const type = types as string;
-    events[type] = events[type].filter((handlerObj) => {
-        if (selector === '*' || (!selector && !fn)) {
-            return (false);
+        typeData.data = typeData.data.filter((handlerObj) => {
+            if (
+                (selector === '*' && !fn) ||
+                (selector === handlerObj.selector && !fn) ||
+                (selector === '*' && fn === handlerObj.callback) ||
+                (selector === handlerObj.selector && fn === handlerObj.callback)
+            ) {
+                return (false);
+            }
+
+            return (true);
+        });
+
+        // there is no delegate bubble event
+        if (typeData.bubble && typeData.data.every((handler) => handler.capture)) {
+            elem.removeEventListener(type, elemData.handler, false);
+            typeData.bubble = false;
         }
-        if (
-            (utils.isString(selector) && utils.isNull(fn) && selector === handlerObj.selector) ||
-            (utils.isNull(selector) && utils.isFunction(fn) && fn === handlerObj.callback) ||
-            (selector === handlerObj.selector && fn === handlerObj.callback)
-        ) {
-            return (false);
+        // there is no delegate capture event
+        if (typeData.capture && typeData.data.every((handler) => !handler.capture)) {
+            elem.removeEventListener(type, elemData.handler, true);
+            typeData.capture = false;
         }
-        return (true);
+
+        // no delegate event in this type
+        if (typeData.data.length === 0) {
+            delete events[type];
+        }
+
+        // there is no detegate in elem
+        if (Object.keys(events).length === 0) {
+            $Cache.delete(elem);
+        }
     });
-
-    // TODO: 需要区分是否是 capture
-    // there is no delegate event in this type
-    if (events[type].length === 0) {
-        elem.removeEventListener(type, elemData.handler, elemData.capture);
-        delete events[type];
-    }
-
-    // there is no detegate in elem
-    if (Object.keys(events).length === 0) {
-        $Cache.delete(elem);
-    }
 }
