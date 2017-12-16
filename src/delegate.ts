@@ -9,6 +9,7 @@ interface SelectorParsed {
 
 interface ElementData {
     events: EventsObj;
+    capture: boolean;
     handler(e: Event): void;
 }
 
@@ -30,17 +31,17 @@ interface EventsObj {
     [x: string]: HandlerObj[];
 }
 
-/** Delegate Data Global Cache */
+/** delegate Data Global Cache */
 const $Cache = new Map<HTMLElement, ElementData>();
 
-/** Fix Some Special Event */
+/** fix Some Special Event */
 const special: { [x: string]: (e: Event) => boolean } = {
     mouseenter: (event) => event.currentTarget === event.target,
     mouseleave: (event) => event.currentTarget === event.target,
 };
 
 /**
- * Parse the selector
+ * parse the selector
  * @param {string} all
  * @returns {SelectorParsed[]}
  */
@@ -67,19 +68,25 @@ function paserSelector(all: string): SelectorParsed[] {
         .filter((selector): selector is SelectorParsed => !!selector);
 }
 
-// 根据选择器匹配被选中的 DOM
-function isContains(delegate: HTMLElement, elem: HTMLElement, handler: HandleObj) {
-    // 选择器缓存中含有被测试 DOM
+/**
+ * match dom
+ * @param {HTMLElement} delegate
+ * @param {HTMLElement} elem
+ * @param {HandlerObj} handler
+ * @returns {boolean}
+ */
+function isContains(delegate: HTMLElement, elem: HTMLElement, handler: HandlerObj): boolean {
+    // dom has been in selector cache
     if (handler.matches.includes(elem)) {
         return (true);
     }
 
-    // 当前 DOM 元素属性
+    //  the tag, id, class of test dom
     const elemTag = elem.tagName.toLowerCase(),
         elemId = elem.getAttribute('id'),
         elemClass = elem.classList;
 
-    // 匹配选择器
+    // match selector
     if (handler.characteristic.every((selector) =>
         (selector.tag && selector.tag !== elemTag) ||
         (selector.id && selector.id !== elemId) ||
@@ -88,7 +95,7 @@ function isContains(delegate: HTMLElement, elem: HTMLElement, handler: HandleObj
         return (false);
     }
 
-    // 重置选择器选择器件，并再次匹配
+    // call querySelectorAll and match again
     handler.matches = Array.from(delegate.querySelectorAll(handler.selector));
     return handler.matches.includes(elem);
 }
@@ -102,7 +109,7 @@ function isContains(delegate: HTMLElement, elem: HTMLElement, handler: HandleObj
  * @returns {HandlerQueueObj[]}
  */
 function tohandlers(elem: HTMLElement, event: $Event, handlers: HandlerObj[]): HandlerQueueObj[] {
-    // 组成路径
+    // create path, from target to elem
     const path: HTMLElement[] = [];
     for (let i = event.target; i !== event.currentTarget && i.parentElement; i = i.parentElement) {
         path.push(i);
@@ -110,9 +117,11 @@ function tohandlers(elem: HTMLElement, event: $Event, handlers: HandlerObj[]): H
     path.push(event.currentTarget);
     path.reverse();
 
+    const capture = (event.eventPhase === 1);
+
     // 委托元素本身的事件
     const handlerQueue: HandlerQueueObj[] = handlers
-        .filter((n) => !n.selector)
+        .filter((n) => !n.selector && n.capture === capture)
         .map((n) => ({ element: elem, environment: n }));
 
     // 沿着委托元素向下
@@ -124,9 +133,14 @@ function tohandlers(elem: HTMLElement, event: $Event, handlers: HandlerObj[]): H
 
         handlerQueue.push(
             ...handlers
-                .filter((n) => n.selector && isContains(elem, path[i], n))
+                .filter((n) => n.selector && n.capture === capture && isContains(elem, path[i], n))
                 .map((n) => ({ element: path[i], environment: n })),
         );
+    }
+
+    // if event is not capture, then reverse queue of handler
+    if (!capture) {
+        handlerQueue.reverse();
     }
 
     return handlerQueue;
@@ -147,13 +161,13 @@ function dispatch(elem: HTMLElement, origin: Event): void {
         throw new Error('This Element does not bind events');
     }
 
-    debugger;
     event.delegateTarget = elem;
     const handlerQueue = tohandlers(elem, event, elemhandlers);
 
     handlerQueue.some((handlerObj: HandlerQueueObj) => {
         const fn = handlerObj.environment.callback;
 
+        // TODO: relatedTarget
         event.currentTarget = handlerObj.element;
         event.type = handlerObj.environment.type;
 
@@ -184,11 +198,12 @@ function dispatch(elem: HTMLElement, origin: Event): void {
  * @param {boolean} [capture]
  */
 export function add(elem: HTMLElement, types: string, selector: string, callback: $Callback, capture: boolean = false): void {
-    // Get data of current dom
+    // get data of current dom
     let elemData = $Cache.get(elem) as ElementData;
-    // If there is no data, then create
+    // if there is no data, then create
     if (utils.isNull(elemData)) {
         elemData = {
+            capture,
             events: {},
             handler: (event: Event): void => dispatch(elem, event),
         };
@@ -197,13 +212,13 @@ export function add(elem: HTMLElement, types: string, selector: string, callback
 
     const events = elemData.events;
 
-    // Split events and bind
+    // split events and bind
     (types.match(/\S+/g) || ['']).forEach((type) => {
         if (!type) {
             return;
         }
 
-        // Ceate handler object
+        // create handler object
         const handlerObj: HandlerObj = {
             type,
             callback,
@@ -213,15 +228,19 @@ export function add(elem: HTMLElement, types: string, selector: string, callback
             matches: selector ? Array.from(elem.querySelectorAll(selector)) : [],
         };
 
-        // If this event is defined first time
+        // if this event is defined first time
         if (!events[type]) {
             events[type] = [];
-            // bind the origin event
+        }
+
+        // bind the origin event
+        if (events[type].every((handler) => handler.capture !== capture)) {
             elem.addEventListener(type, elemData.handler, capture);
         }
 
-        // If there have duplicates selector, then cover it; no duplicates, then add to the end
-        if (!(events[type].some((n, i, arr) => (selector === n.selector) && (Boolean(arr[i] = handlerObj))))) {
+        // TODO: 需要提高可读性
+        // if there have duplicates selector, then cover it; no duplicates, then add to the end
+        if (!(events[type].some((n, i, arr) => (selector === n.selector) && (capture === n.capture) && (Boolean(arr[i] = handlerObj))))) {
             events[type].push(handlerObj);
         }
     });
@@ -236,5 +255,51 @@ export function add(elem: HTMLElement, types: string, selector: string, callback
  * @param {boolean} [capture]
  */
 export function remove(elem: HTMLElement, types?: string, selector?: string, fn?: $Callback, capture: boolean = false): void {
+    const elemData = $Cache.get(elem);
+    const events = elemData && elemData.events;
 
+    // no data, return;
+    if (!elemData || !events) {
+        return;
+    }
+
+    // split event type
+    let typeArr = (types || '').match(/\S+/g);
+
+    // type is none, delete all types data
+    if (!typeArr) {
+        typeArr = Object.keys(events);
+    }
+
+    if (typeArr.length > 1) {
+        typeArr.forEach((item) => remove(elem, item, selector, fn));
+        return;
+    }
+
+    const type = types as string;
+    events[type] = events[type].filter((handlerObj) => {
+        if (selector === '*' || (!selector && !fn)) {
+            return (false);
+        }
+        if (
+            (utils.isString(selector) && utils.isNull(fn) && selector === handlerObj.selector) ||
+            (utils.isNull(selector) && utils.isFunction(fn) && fn === handlerObj.callback) ||
+            (selector === handlerObj.selector && fn === handlerObj.callback)
+        ) {
+            return (false);
+        }
+        return (true);
+    });
+
+    // TODO: 需要区分是否是 capture
+    // there is no delegate event in this type
+    if (events[type].length === 0) {
+        elem.removeEventListener(type, elemData.handler, elemData.capture);
+        delete events[type];
+    }
+
+    // there is no detegate in elem
+    if (Object.keys(events).length === 0) {
+        $Cache.delete(elem);
+    }
 }

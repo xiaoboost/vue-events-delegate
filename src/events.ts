@@ -3,117 +3,50 @@ abstract class Delegate {
     _originalEvent: { [key: string]: any };
 
     // Event
-    get bubbles(): boolean {
-        return this._originalEvent.bubbles;
-    }
-    get cancelable(): boolean {
-        return this._originalEvent.cancelable;
-    }
-    get cancelBubble(): boolean {
-        return this._originalEvent.cancelBubble;
-    }
-    get composed(): boolean {
-        return this._originalEvent.composed;
-    }
-    get eventPhase(): number {
-        return this._originalEvent.eventPhase;
-    }
-    get isTrusted(): boolean {
-        return this._originalEvent.isTrusted;
-    }
+    bubbles: boolean;
+    cancelable: boolean;
+    cancelBubble: boolean;
+    composed: boolean;
+    eventPhase: number;
+    isTrusted: boolean;
+    target: HTMLElement;
+    currentTarget: HTMLElement;
+    type: string;
 
     // MouseEvent
-    get button(): number {
-        return this._originalEvent.button;
-    }
-    get buttons(): number {
-        return this._originalEvent.buttons;
-    }
-    get clientX(): number {
-        return this._originalEvent.clientX;
-    }
-    get clientY(): number {
-        return this._originalEvent.clientY;
-    }
-    get movementX(): number {
-        return this._originalEvent.movementX;
-    }
-    get movementY(): number {
-        return this._originalEvent.movementY;
-    }
-    get offsetX(): number {
-        return this._originalEvent.offsetX;
-    }
-    get offsetY(): number {
-        return this._originalEvent.offsetY;
-    }
-    get pageX(): number {
-        return this._originalEvent.pageX;
-    }
-    get pageY(): number {
-        return this._originalEvent.pageY;
-    }
-    get region(): string {
-        return this._originalEvent.region;
-    }
-    get screenX(): number {
-        return this._originalEvent.screenX;
-    }
-    get screenY(): number {
-        return this._originalEvent.screenY;
-    }
-    get x(): number {
-        return this._originalEvent.x;
-    }
-    get y(): number {
-        return this._originalEvent.y;
-    }
+    button: number;
+    buttons: number;
+    clientX: number;
+    clientY: number;
+    movementX: number;
+    movementY: number;
+    offsetX: number;
+    offsetY: number;
+    pageX: number;
+    pageY: number;
+    region: string;
+    screenX: number;
+    screenY: number;
+    x: number;
+    y: number;
 
     // WheelEvent
-    get deltaX(): number {
-        return this._originalEvent.deltaX;
-    }
-    get deltaY(): number {
-        return this._originalEvent.deltaY;
-    }
-    get deltaZ(): number {
-        return this._originalEvent.deltaZ;
-    }
-    get deltaMode(): number {
-        return this._originalEvent.deltaMode;
-    }
+    deltaX: number;
+    deltaY: number;
+    deltaZ: number;
+    deltaMode: number;
 
     // KeyboardEvent
-    get altKey(): boolean {
-        return this._originalEvent.altKey;
-    }
-    get code(): string {
-        return this._originalEvent.code;
-    }
-    get ctrlKey(): boolean {
-        return this._originalEvent.ctrlKey;
-    }
-    get isComposing(): boolean {
-        return this._originalEvent.isComposing;
-    }
-    get key(): string {
-        return this._originalEvent.key;
-    }
-    get locale(): string {
-        return this._originalEvent.locale;
-    }
-    get location(): number {
-        return this._originalEvent.location;
-    }
-    get metaKey(): boolean {
-        return this._originalEvent.metaKey;
-    }
-    get repeat(): boolean {
-        return this._originalEvent.repeat;
-    }
-    get shiftKey(): boolean {
-        return this._originalEvent.shiftKey;
-    }
+    altKey: boolean;
+    code: string;
+    ctrlKey: boolean;
+    isComposing: boolean;
+    key: string;
+    locale: string;
+    location: number;
+    metaKey: boolean;
+    repeat: boolean;
+    shiftKey: boolean;
 
     // methods
     getModifierState(keyArg: string): boolean {
@@ -121,11 +54,74 @@ abstract class Delegate {
     }
 }
 
+const properties = [
+    // Event
+    'bubbles',
+    'cancelable',
+    'cancelBubble',
+    'composed',
+    'eventPhase',
+    'isTrusted',
+    'target',
+    'currentTarget',
+    'type',
+    // MouseEvent
+    'button',
+    'buttons',
+    'clientX',
+    'clientY',
+    'movementX',
+    'movementY',
+    'offsetX',
+    'offsetY',
+    'pageX',
+    'pageY',
+    'region',
+    'screenX',
+    'screenY',
+    'x',
+    'y',
+    // WheelEvent
+    'deltaX',
+    'deltaY',
+    'deltaZ',
+    'deltaMode',
+    // KeyboardEvent
+    'altKey',
+    'code',
+    'ctrlKey',
+    'isComposing',
+    'key',
+    'locale',
+    'location',
+    'metaKey',
+    'repeat',
+    'shiftKey',
+];
+
+properties.forEach((property) => {
+    Object.defineProperty(Delegate.prototype, property, {
+        get(this: Delegate): any {
+            return this._originalEvent[property];
+        },
+        set(this: Delegate, value): void {
+            // direct assignment causes stack Overflow
+            Object.defineProperty(this, property, {
+                value,
+                writable: true,
+                enumerable: true,
+                configurable: false,
+            });
+        },
+        enumerable: true,
+        configurable: true,
+    });
+});
+
 /** Delegate Event  */
 export class $Event extends Delegate {
     currentTarget: HTMLElement;
     delegateTarget: HTMLElement;
-    target: HTMLElement;
     type: string;
 
     isDefaultPrevented = false;
