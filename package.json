@@ -4,7 +4,11 @@
   "description": "DOM Event delegate in Vue",
   "main": "index.js",
   "scripts": {
-    "dev": "node build/development"
+    "dev": "node build/development",
+    "build": "node build/build.js",
+    "build:ts": "node node_modules/typescript/lib/tsc.js -p .",
+    "test": "npm run build && webpack --config test/webpack.config.js && mocha test/test.build.js",
+    "release": "bash build/release.sh"
   },
   "keywords": [
     "event",
@@ -22,6 +26,7 @@
     "@types/chai": "^4.0.10",
     "@types/koa": "^2.0.42",
     "@types/mocha": "^2.2.44",
+    "@types/shelljs": "^0.7.7",
     "chai": "^4.1.2",
     "css-loader": "^0.28.7",
     "eslint": "^4.13.1",
@@ -31,6 +36,7 @@
     "mocha": "^4.0.1",
     "rollup": "^0.52.1",
     "rollup-plugin-replace": "^2.0.0",
+    "shelljs": "^0.7.8",
     "testdouble": "^3.2.6",
     "ts-loader": "^3.2.0",
     "tslint": "^5.8.0",

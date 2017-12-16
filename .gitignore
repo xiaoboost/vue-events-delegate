@@ -1,5 +1,8 @@
 .DS_Store
 .vscode/
+lib/
+dist/
 node_modules/
 npm-debug.log
 example/build.js*
+src/*.js
