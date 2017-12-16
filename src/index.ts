@@ -1,3 +1,4 @@
+import * as utils from './utils';
 import { add, remove } from './delegate';
 import { $Event, $Callback } from './events';
 
@@ -74,7 +75,7 @@ function fixType(type: string): string {
  * @param {VNodeDirective} binding
  */
 function bind(el: HTMLElement, binding: VNodeDirective): void {
-    const value = (binding.value instanceof Array) ? binding.value : ['', binding.value];
+    const value = utils.isArray(binding.value) ? binding.value : ['', binding.value];
 
     const [selector, callback] = value as [string, $Callback];
     const handler = fnWrapper(callback, binding.modifiers, () => unbind(el, binding));
@@ -90,7 +91,7 @@ function bind(el: HTMLElement, binding: VNodeDirective): void {
  * @param {VNodeDirective} binding
  */
 function unbind(el: HTMLElement, binding: VNodeDirective): void {
-    const value = (binding.value instanceof Array) ? binding.value : ['', binding.value];
+    const value = utils.isArray(binding.value) ? binding.value : ['', binding.value];
 
     const [selector, callback] = value as [string, $Callback];
     const handler = functionMap.get(callback);

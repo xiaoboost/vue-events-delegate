@@ -17,15 +17,6 @@ export function isString(x: any): x is string {
 }
 
 /**
- * Is x a boolean
- * @param {*} x
- * @returns {x is boolean}
- */
-export function isBoolean(x: any): x is boolean {
-    return (typeof x === 'boolean');
-}
-
-/**
  * Is x a null or undefined
  * @param {*} x
  * @returns {(x is null | undefined)}
@@ -36,11 +27,12 @@ export function isNull(x: any): x is null | undefined {
 }
 
 /**
- * Is x a function
+ * Is x a array
+ *  - contains class that inherited array
+ *
  * @param {*} x
- * @returns {x is () => any}
+ * @returns {x is any}
  */
-/* tslint:disable-next-line:ban-types  */
-export function isFunction(x: any): x is Function {
-    return (typeof x === 'function');
+export function isArray<T>(x: any): x is T[] {
+    return (Object.prototype.toString.call(x) === '[object Array]');
 }
