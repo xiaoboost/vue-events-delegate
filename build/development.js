@@ -29,6 +29,6 @@ compiler.watch(
             return;
         }
 
-        console.log('\n' + chalk.yellow(`Your application is already set at http://localhost:${port}/.`));
+        console.log(chalk.yellow(`Your application is already set at http://localhost:${port}/.`));
     }
 );
