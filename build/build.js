@@ -5,6 +5,7 @@ const fs = require('fs'),
     uglify = require('uglify-js'),
     rollup = require('rollup'),
     spawn = require('child_process').spawn,
+    alias = require('rollup-plugin-alias'),
     replace = require('rollup-plugin-replace'),
     project = require('../package.json'),
     output = resolve('dist'),
@@ -55,7 +56,11 @@ function createEnv(config) {
         input: {
             'input': resolve('lib/src/index.js'),
             'external': ['vue'],
-            'plugins': [],
+            'plugins': [
+                alias({
+                    'tslib': resolve('node_modules/tslib/tslib.es6.js'),
+                }),
+            ],
         },
         output: {
             banner,
@@ -105,7 +110,8 @@ function read(dest) {
 
 console.log('\x1Bc');
 console.log(chalk.yellow('> Start Compile:\n'));
-shell.rm('-rf', path.join(output, '*'));
+shell.rm('-rf', output);
+shell.mkdir('-p', output);
 
 async function main() {
     await promiseSpawn('node', 'node_modules/typescript/lib/tsc.js', '-p', '.');
