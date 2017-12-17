@@ -136,8 +136,8 @@ function tohandlers(event: $Event, handlers: HandlerEnv[]): HandlerQueueObj[] {
     // check events along the path
     const handlerQueue: HandlerQueueObj[] = [];
     for (const dom of path) {
-        // the type of node must be  Node.ELEMENT_NODE
-        if (dom.nodeType !== 1) {
+        // the type of node must be  Node.ELEMENT_NODE or Node.DOCUMENT_NODE
+        if (dom.nodeType !== 1 && dom.nodeType !== 9) {
             continue;
         }
 
