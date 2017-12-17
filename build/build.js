@@ -54,7 +54,7 @@ function promiseSpawn(command, ...args) {
 function createEnv(config) {
     const environment = {
         input: {
-            'input': resolve('lib/src/index.js'),
+            'input': resolve('lib/index.js'),
             'external': ['vue'],
             'plugins': [
                 alias({
@@ -136,6 +136,8 @@ async function main() {
 
     const tsconfig = await read(resolve('tsconfig.json'));
     shell.rm('-rf', resolve(json.parse(tsconfig).compilerOptions.outDir));
+
+    console.log(chalk.yellow('\n> Finish Compile.'));
 }
 
 main();

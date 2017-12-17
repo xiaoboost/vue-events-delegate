@@ -1,9 +1,7 @@
 {
     "compilerOptions": {
-        // 输出文件夹
-        "outDir": "lib",
         // 是否包含可以用于 debug 的 sourceMap
-        "sourceMap": false,
+        "sourceMap": true,
         // 以严格模式解析
         "strict": true,
         // 采用的模块系统
@@ -37,6 +35,5 @@
         // 包含的库定义文件
         "lib": ["es2015", "es2016", "dom"],
     },
-    "include": ["src/**/*.ts"],
-    "exclude": ["node_modules", "dist"]
+    "include": ["./**/*.ts"]
 }

@@ -25,8 +25,9 @@ module.exports = {
                 options: {
                     typeCheck: true,
                     emitErrors: true,
-                    configFile: 'tslint.json',
-                    tsConfigFile: 'tsconfig.json',
+                    // relative to the project root directory
+                    configFile: './tslint.json',
+                    tsConfigFile: './example/tsconfig.json',
                     include: [resolve('example'), resolve('src')],
                     formattersDirectory: 'node_modules/tslint-loader/formatters/',
                 },
