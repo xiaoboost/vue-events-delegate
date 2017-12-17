@@ -35,7 +35,7 @@ interface EventsObj {
 }
 
 /** delegate Data Global Cache */
-const $Cache = new Map<HTMLElement, ElementData>();
+export const $Cache = new Map<HTMLElement, ElementData>();
 
 /** fix Some Special Event */
 const special: { [x: string]: (e: Event) => boolean } = {
@@ -136,8 +136,8 @@ function tohandlers(event: $Event, handlers: HandlerEnv[]): HandlerQueueObj[] {
     // check events along the path
     const handlerQueue: HandlerQueueObj[] = [];
     for (const dom of path) {
-        // the type of node must be  Node.ELEMENT_NODE or Node.DOCUMENT_NODE
-        if (dom.nodeType !== 1 && dom.nodeType !== 9) {
+        // the type of node must be Node.ELEMENT_NODE
+        if (dom.nodeType !== 1) {
             continue;
         }
 
@@ -161,14 +161,14 @@ function tohandlers(event: $Event, handlers: HandlerEnv[]): HandlerQueueObj[] {
  * @param {HTMLElement} elem
  * @param {Event} args
  */
-function dispatch(elem: HTMLElement, origin: Event): void {
+export function dispatch(elem: HTMLElement, origin: Event): void {
     const event = new $Event(origin);
     const elemData = $Cache.get(elem);
     const elemEvents = elemData && elemData.events;
     const elemhandlers = elemEvents && elemEvents[origin.type];
 
     if (!elemhandlers) {
-        throw new Error('This Element does not bind events');
+        return;
     }
 
     event.delegateTarget = elem;
