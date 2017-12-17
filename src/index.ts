@@ -3,6 +3,7 @@ import './polyfill';
 import * as utils from './utils';
 import { add, remove } from './delegate';
 import { $Event, $Callback } from './events';
+import { triggerEvent, triggerDelegateEvent } from './trigger';
 
 import { Vue, VueConstructor } from 'vue/types/vue';
 import { VNodeDirective } from 'vue/types/vnode';
@@ -111,13 +112,23 @@ export default {
             // TODO: update event
         });
 
-        App.prototype.delegateOn = function(el: HTMLElement, type: string, selector: string | $Callback, fn: $Callback | Modifiers, option?: Modifiers): Vue {
+        App.prototype.delegateOn = function(el: HTMLElement, type: string, selector: string | $Callback, fn: $Callback | Modifiers, option?: Modifiers) {
 
             return this;
         };
 
-        App.prototype.delegateOff = function(el: HTMLElement, type?: string, selector?: string, fn?: $Callback): Vue {
+        App.prototype.delegateOff = function(el: HTMLElement, type?: string, selector?: string, fn?: $Callback) {
 
+            return this;
+        };
+
+        App.prototype.triggerEvent = function(elem: HTMLElement, name: string, opts = {}) {
+            triggerEvent(elem, name, opts);
+            return this;
+        };
+
+        App.prototype.triggerDelegateEvent = function(elem: HTMLElement, name: string, opts = {}) {
+            triggerDelegateEvent(elem, name, opts);
             return this;
         };
     },
