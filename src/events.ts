@@ -1,12 +1,64 @@
+enum Properties {
+    // Event
+    x01 = 'bubbles',
+    x02 = 'cancelable',
+    x03 = 'cancelBubble',
+    x04 = 'eventPhase',
+    x05 = 'isTrusted',
+    x06 = 'target',
+    x07 = 'currentTarget',
+    x08 = 'type',
+
+    // MouseEvent
+    x09 = 'button',
+    x10 = 'buttons',
+    x11 = 'clientX',
+    x12 = 'clientY',
+    x13 = 'movementX',
+    x14 = 'movementY',
+    x15 = 'offsetX',
+    x16 = 'offsetY',
+    x17 = 'pageX',
+    x18 = 'pageY',
+    x19 = 'screenX',
+    x20 = 'screenY',
+    x21 = 'x',
+    x22 = 'y',
+
+    // WheelEvent
+    x23 = 'deltaX',
+    x24 = 'deltaY',
+    x25 = 'deltaZ',
+    x26 = 'deltaMode',
+
+    // KeyboardEvent
+    x27 = 'altKey',
+    x28 = 'code',
+    x29 = 'ctrlKey',
+    x30 = 'key',
+    x31 = 'locale',
+    x32 = 'location',
+    x33 = 'metaKey',
+    x34 = 'repeat',
+    x35 = 'shiftKey',
+
+    // ignore
+    // x04 = 'composed',
+    // x20 = 'region',
+    // x32 = 'isComposing',
+}
+
+type AllEvent = Event & MouseEvent & KeyboardEvent & WheelEvent;
+export type AvailableProperties = { [key in Properties]: AllEvent[key] };
+
 /** class delegate base event */
-abstract class Delegate {
+abstract class Delegate implements AvailableProperties {
     _originalEvent: { [key: string]: any };
 
     // Event
     bubbles: boolean;
     cancelable: boolean;
     cancelBubble: boolean;
-    composed: boolean;
     eventPhase: number;
     isTrusted: boolean;
     target: HTMLElement;
@@ -24,7 +76,6 @@ abstract class Delegate {
     offsetY: number;
     pageX: number;
     pageY: number;
-    region: string;
     screenX: number;
     screenY: number;
     x: number;
@@ -40,74 +91,24 @@ abstract class Delegate {
     altKey: boolean;
     code: string;
     ctrlKey: boolean;
-    isComposing: boolean;
     key: string;
     locale: string;
     location: number;
     metaKey: boolean;
     repeat: boolean;
     shiftKey: boolean;
-
-    // methods
-    getModifierState(keyArg: string): boolean {
-        type fn = (key: string) => boolean;
-        return (this._originalEvent.getModifierState as fn)(keyArg);
-    }
 }
 
-const properties = [
-    // Event
-    'bubbles',
-    'cancelable',
-    'cancelBubble',
-    'composed',
-    'eventPhase',
-    'isTrusted',
-    'target',
-    'currentTarget',
-    'type',
-    // MouseEvent
-    'button',
-    'buttons',
-    'clientX',
-    'clientY',
-    'movementX',
-    'movementY',
-    'offsetX',
-    'offsetY',
-    'pageX',
-    'pageY',
-    'region',
-    'screenX',
-    'screenY',
-    'x',
-    'y',
-    // WheelEvent
-    'deltaX',
-    'deltaY',
-    'deltaZ',
-    'deltaMode',
-    // KeyboardEvent
-    'altKey',
-    'code',
-    'ctrlKey',
-    'isComposing',
-    'key',
-    'locale',
-    'location',
-    'metaKey',
-    'repeat',
-    'shiftKey',
-];
+for (const key in Properties) {
+    const prop = Properties[key];
 
-properties.forEach((property) => {
-    Object.defineProperty(Delegate.prototype, property, {
+    Object.defineProperty(Delegate.prototype, prop, {
         get(this: Delegate): any {
-            return this._originalEvent[property];
+            return this._originalEvent[prop];
         },
         set(this: Delegate, value): void {
             // direct assignment causes stack Overflow
-            Object.defineProperty(this, property, {
+            Object.defineProperty(this, prop, {
                 value,
                 writable: true,
                 enumerable: true,
@@ -117,7 +118,7 @@ properties.forEach((property) => {
         enumerable: true,
         configurable: true,
     });
-});
+}
 
 /** Delegate Event  */
 export class $Event extends Delegate {
