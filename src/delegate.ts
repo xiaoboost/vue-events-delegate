@@ -44,6 +44,16 @@ const special: { [x: string]: (e: Event) => boolean } = {
 };
 
 /**
+ * creates an array from an array-like object.
+ * @template T
+ * @param {ArrayLike<T>} arrayLike
+ * @returns {T[]}
+ */
+function arrayFrom<T>(arrayLike: ArrayLike<T>): T[] {
+    return Array.prototype.slice.call(arrayLike) as T[];
+}
+
+/**
  * parse the selector
  * @param {string} all
  * @returns {SelectorParsed[]}
@@ -99,7 +109,7 @@ function isContains(delegate: HTMLElement, elem: HTMLElement, handler: HandlerEn
     }
 
     // call querySelectorAll and match again
-    handler.matches = Array.from(delegate.querySelectorAll(handler.selector));
+    handler.matches = arrayFrom(delegate.querySelectorAll(handler.selector));
     return handler.matches.includes(elem);
 }
 
@@ -222,7 +232,7 @@ export function add(elem: HTMLElement, types: string, selector: string, callback
         const handlerEnv: HandlerEnv = {
             type, callback, selector, capture,
             characteristic: paserSelector(selector),
-            matches: selector ? Array.from(elem.querySelectorAll(selector)) : [],
+            matches: selector ? arrayFrom(elem.querySelectorAll(selector)) : [],
         };
 
         // if this event is defined first time

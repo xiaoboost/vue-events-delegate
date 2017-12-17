@@ -1,3 +1,5 @@
+import './polyfill';
+
 import * as utils from './utils';
 import { add, remove } from './delegate';
 import { $Event, $Callback } from './events';
