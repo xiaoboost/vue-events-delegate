@@ -273,8 +273,9 @@ export function add(elem: HTMLElement, types: string, selector: string, callback
  * @param {string} [types]
  * @param {string} [selector]
  * @param {($Callback | false)} [callback]
+ * @param {boolean} [capture]
  */
-export function remove(elem: HTMLElement, types: string = '', selector: string = '*', fn: $Callback | false = false): void {
+export function remove(elem: HTMLElement, types = '', selector = '*', fn: $Callback | false = false, capture?: boolean): void {
     const elemData = $Cache.get(elem);
     const events = elemData && elemData.events;
 
@@ -296,10 +297,9 @@ export function remove(elem: HTMLElement, types: string = '', selector: string =
 
         typeData.data = typeData.data.filter((handlerObj) => {
             if (
-                (selector === '*' && !fn) ||
-                (selector === handlerObj.selector && !fn) ||
-                (selector === '*' && fn === handlerObj.callback) ||
-                (selector === handlerObj.selector && fn === handlerObj.callback)
+                (!fn || fn === handlerObj.callback) &&
+                (selector === '*' || selector === handlerObj.selector) &&
+                (utils.isNull(capture) || capture === handlerObj.capture)
             ) {
                 return (false);
             }

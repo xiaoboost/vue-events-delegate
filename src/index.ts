@@ -101,7 +101,7 @@ function unbind(el: HTMLElement, binding: VNodeDirective): void {
     const type = fixType(binding.arg);
 
     functionMap.delete(callback);
-    remove(el, type, selector, handler);
+    remove(el, type, selector, handler, binding.modifiers.capture);
 }
 
 export default {
