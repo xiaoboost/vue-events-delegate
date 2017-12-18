@@ -5,7 +5,7 @@ import { add, remove } from './delegate';
 import { $Event, $Callback } from './events';
 import { triggerEvent, triggerDelegateEvent } from './trigger';
 
-import { Vue, VueConstructor } from 'vue/types/vue';
+import { VueConstructor } from 'vue/types/vue';
 import { VNodeDirective } from 'vue/types/vnode';
 
 interface Modifiers { [key: string]: boolean; }
