@@ -4,11 +4,11 @@ export interface BaseDelegateEvent extends Event {
     _originalEvent: Event;
 
     /** The current DOM element within the event bubbling phase. */
-    currentTarget: Element;
+    currentTarget: HTMLElement;
     /** The element where the currently-called Delegate event handler was attached. */
-    delegateTarget: Element;
+    delegateTarget: HTMLElement;
     /** The DOM element that initiated the event. */
-    target: Element;
+    target: HTMLElement;
 
     /** whether event.preventDefault() was ever called on this event object. */
     isDefaultPrevented: boolean;
@@ -18,7 +18,8 @@ export interface BaseDelegateEvent extends Event {
     isPropagationStopped: boolean;
 
     /** The other DOM element involved in the event, if any. */
-    relatedTarget: Element;
+    // TODO: 存疑
+    relatedTarget: HTMLElement;
     /** The last value returned by an event handler that was triggered by this event, unless the value was undefined. */
     result: any;
 
@@ -30,32 +31,46 @@ export interface BaseDelegateEvent extends Event {
     preventDefault(): void;
 }
 
-export interface DelegateInputEvent extends BaseDelegateEvent {
-    altKey: boolean;
-    ctrlKey: boolean;
-    metaKey: boolean;
-    shiftKey: boolean;
+export interface DelegateWheelEvent extends BaseDelegateEvent {
+    deltaX: number,
+    deltaY: number,
+    deltaZ: number,
+    deltaMode: number,
 }
 
-export interface DelegateMouseEvent extends DelegateInputEvent {
+export interface DelegateMouseEvent extends BaseDelegateEvent {
     button: number;
+    buttons: number;
     clientX: number;
     clientY: number;
+    movementX: number;
+    movementY: number;
     offsetX: number;
     offsetY: number;
     pageX: number;
     pageY: number;
     screenX: number;
     screenY: number;
+    x: number;
+    y: number;
 }
 
-export interface DelegateKeyEvent extends DelegateInputEvent {
-    char: any;
-    charCode: number;
-    key: any;
-    keyCode: number;
+export interface DelegateKeyEvent extends BaseDelegateEvent {
+    altKey: boolean;
+    code: string;
+    ctrlKey: boolean;
+    key: string;
+    locale: string;
+    location: number;
+    metaKey: boolean;
+    repeat: boolean;
+    shiftKey: boolean;
 }
 
-export interface DelegateEvent extends BaseDelegateEvent, DelegateInputEvent, DelegateMouseEvent, DelegateKeyEvent {}
+export interface DelegateEvent extends
+    BaseDelegateEvent,
+    DelegateWheelEvent,
+    DelegateMouseEvent,
+    DelegateKeyEvent {}
 
 export type DelegateCallback = (e: DelegateEvent) => any;

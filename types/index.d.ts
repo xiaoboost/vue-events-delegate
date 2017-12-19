@@ -1,6 +1,6 @@
 import Vue from 'vue';
-import { Modifiers } from './options';
-import { DelegateEvent, DelegateCallback } from './events';
+import { DelegateCallback } from './events';
+import { Modifiers, Options } from './options';
 
 export * from './events';
 export * from './options';
@@ -47,5 +47,22 @@ declare module 'vue/types/vue' {
          * @param {DelegateCallback} [fn]
          */
         delegateOff(el: HTMLElement, type: string, selector?: string, fn?: DelegateCallback): this;
+
+        /**
+         * triggers a native event
+         *  - the event of the delegate is also triggered during the execution of the event stream
+         * @param {HTMLElement} elem
+         * @param {string} name
+         * @param {PartialEvent} [opts={}]
+         */
+        triggerEvent(elem: HTMLElement, name: string, opts?: Options): this;
+
+        /**
+         * triggers a delegate event
+         * @param {HTMLElement} elem
+         * @param {string} name
+         * @param {PartialEvent} [opts={}]
+         */
+        triggerDelegateEvent(elem: HTMLElement, name: string, opts?: Options): this;
     }
 }
