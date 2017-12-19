@@ -1,8 +1,13 @@
 import * as utils from './utils';
-import { AvailableProperties } from './events';
 import { $Cache, dispatch } from './delegate';
 
-type PartialEvent = Partial<AvailableProperties>;
+type InputProps =
+    'bubbles' | 'cancelable' | 'button' | 'buttons' | 'clientX' | 'clientY' |
+    'screenX' | 'screenY' | 'deltaX' | 'deltaY' | 'deltaZ' | 'deltaMode' | 'altKey' |
+    'code' | 'ctrlKey' | 'key' | 'location' | 'metaKey' | 'repeat' | 'shiftKey';
+
+type AllEvent = Event & MouseEvent & KeyboardEvent & WheelEvent;
+type PartialEvent = Partial<{ [key in InputProps]: AllEvent[key] } & { capture: boolean }>;
 
 /**
  * create a native event object
@@ -32,6 +37,16 @@ function createEvent(type: string, option: PartialEvent) {
 }
 
 /**
+ * set property value for event object
+ * @param {Event} evt
+ * @param {string} property
+ * @param {*} value
+ */
+function setEventProperty(evt: Event, property: string, value: any) {
+    Object.defineProperty(evt, property, { value, enumerable: true, writable: true });
+}
+
+/**
  * triggers a delegate event
  * @param {HTMLElement} elem
  * @param {string} name
@@ -42,6 +57,11 @@ export function triggerDelegateEvent(elem: HTMLElement, type: string, opts: Part
         return;
     }
 
+    // event phase
+    const capture = opts.capture ? 1 : 3;
+    delete opts.capture;
+
+    // assembly delegete dom path
     const html = document.body.parentElement as HTMLElement;
     const path: HTMLElement[] = [];
 
@@ -52,22 +72,20 @@ export function triggerDelegateEvent(elem: HTMLElement, type: string, opts: Part
     }
 
     $Cache.has(html) && path.push(html);
-    path.reverse();
 
     // create native event
     const nativeEvent = createEvent(type, opts);
-    Object.defineProperty(nativeEvent, 'target', { value: elem, enumerable: true });
-    Object.defineProperty(nativeEvent, 'currentTarget', { value: elem, enumerable: true });
+    setEventProperty(nativeEvent, 'target', elem);
+    setEventProperty(nativeEvent, 'eventPhase', capture);
 
-    // capturing phase
-    Object.defineProperty(nativeEvent, 'eventPhase', { value: 1, enumerable: true, writable: true });
-    path.forEach((dom) => dispatch(dom, nativeEvent));
+    if (capture === 1) {
+        path.reverse();
+    }
 
-    path.reverse();
-
-    // bubbling phase
-    Object.defineProperty(nativeEvent, 'eventPhase', { value: 3, enumerable: true, writable: true });
-    path.forEach((dom) => dispatch(dom, nativeEvent));
+    path.forEach((dom) => {
+        setEventProperty(nativeEvent, 'currentTarget', dom);
+        dispatch(dom, nativeEvent);
+    });
 }
 
 /**

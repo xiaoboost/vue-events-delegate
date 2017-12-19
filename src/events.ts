@@ -1,4 +1,4 @@
-enum Properties {
+enum Props {
     // Event
     x01 = 'bubbles',
     x02 = 'cancelable',
@@ -49,10 +49,10 @@ enum Properties {
 }
 
 type AllEvent = Event & MouseEvent & KeyboardEvent & WheelEvent;
-export type AvailableProperties = { [key in Properties]: AllEvent[key] };
+type AvailProps = { [key in Props]: AllEvent[key] };
 
 /** class delegate base event */
-abstract class Delegate implements AvailableProperties {
+abstract class Delegate implements AvailProps {
     _originalEvent: { [key: string]: any };
 
     // Event
@@ -99,8 +99,8 @@ abstract class Delegate implements AvailableProperties {
     shiftKey: boolean;
 }
 
-for (const key in Properties) {
-    const prop = Properties[key];
+for (const key in Props) {
+    const prop = Props[key];
 
     Object.defineProperty(Delegate.prototype, prop, {
         get(this: Delegate): any {
