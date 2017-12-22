@@ -13,6 +13,9 @@ module.exports = {
     resolve: {
         extensions: ['.js', '.ts'],
         mainFiles: ['index.ts'],
+        alias: {
+            'vue$': 'vue/dist/vue.esm.js',
+        },
     },
     plugins: [],
     devtool: 'source-map',
