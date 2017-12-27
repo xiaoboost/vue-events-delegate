@@ -42,6 +42,8 @@ export function fnWrapper(callback: $Callback, modifiers: Modifiers, once?: () =
         if (self && left && right && esc && enter) {
             const ans = callback(event);
 
+            event.result = ans;
+
             if (modifiers.stop) {
                 event.stopPropagation();
             }
