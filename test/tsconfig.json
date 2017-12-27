@@ -2,7 +2,7 @@
     "compilerOptions": {
         "allowJs": true,
         // 是否包含可以用于 debug 的 sourceMap
-        "sourceMap": false,
+        "sourceMap": true,
         // 以严格模式解析
         "strict": true,
         // 采用的模块系统
@@ -36,5 +36,5 @@
         // 包含的库定义文件
         "lib": ["es2015", "es2016", "dom"],
     },
-    "include": ["./*.ts", "../src/*.ts"]
+    "include": ["./*.ts", "../src/*.ts", "../types/*.ts"]
 }

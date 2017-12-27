@@ -1,18 +1,17 @@
-/** Global declare */
-declare function expect(target: any, message?: string): Chai.Assertion;
+// @link: https://github.com/jquery/jquery/blob/master/test/unit/event.js
 
 import Vue from 'vue';
 import delegate from '../src';
-import { createVue, destroyVM } from './utils';
+import * as utils from './utils';
 
 Vue.use(delegate);
 
-describe('base event', () => {
-    let vm: Vue;
-    afterEach(() => destroyVM(vm));
+describe('base function', () => {
+    let vm;
+    afterEach(() => utils.destroyVM(vm));
 
-    describe('mouse', () => {
-        const instance = {
+    describe('mouse event', () => {
+        vm = utils.createVue({
             template:
                 `<div
                     class="outter"
@@ -48,23 +47,18 @@ describe('base event', () => {
                     this.mouseleave++;
                 },
             },
-        };
+        });
 
-        it('click', () => {
-            vm = createVue(instance);
-
+        it('click event', () => {
             const text1 = vm.$el.querySelector('.text1');
-            const text2 = vm.$el.querySelector('.text2');
+            // const text2 = vm.$el.querySelector('.text2');
 
-            triggerEvent(text1, 'click');
+            vm.triggerEvent(text1, 'click');
             expect(vm.textClick01).to.equal(1);
             expect(vm.textClick02).to.equal(0);
-            triggerEvent(text2, 'click');
-            expect(vm.textClick01).to.equal(1);
-            expect(vm.textClick02).to.equal(1);
-
-            vm.$$on();
-            vm.$destroy();
+            // triggerEvent(text2, 'click');
+            // expect(vm.textClick01).to.equal(1);
+            // expect(vm.textClick02).to.equal(1);
         });
     });
 });

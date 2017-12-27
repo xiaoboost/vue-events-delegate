@@ -1,23 +1,20 @@
 import Vue from 'vue';
-import { ComponentOptions } from 'vue/types/options';
-
-type DefaultComponentOptions = ComponentOptions<Vue>;
 
 /**
  * create a DIV dom and append to body.
  * @return {HTMLDivElement} DOM
  */
-const createElm = () => {
+function createElm() {
     const elm = document.createElement('div');
     document.body.appendChild(elm);
     return elm;
-};
+}
 
 /**
  * Destroy a instance of Vue
  * @param {Vue} vm
  */
-export function destroyVM(vm: Vue): void {
+export function destroyVM(vm) {
     vm.$el &&
     vm.$el.parentNode &&
     vm.$el.parentNode.removeChild(vm.$el);
@@ -25,12 +22,12 @@ export function destroyVM(vm: Vue): void {
 
 /**
  * create a instance of Vue
- * @param {(DefaultComponentOptions | string)} Compo
+ * @param {ComponentOptions} Compo
  * @param {boolean} [mounted=true]
  * @return {Vue} vm
  */
-export function createVue(Compo: DefaultComponentOptions | string, mounted = true) {
-    const data: DefaultComponentOptions = (typeof Compo === 'string')
+export function createVue(Compo, mounted = true) {
+    const data = (typeof Compo === 'string')
         ? { template: Compo }
         : Compo;
 

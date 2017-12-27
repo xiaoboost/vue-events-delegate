@@ -13,6 +13,10 @@ module.exports = {
     globals: {
         'window': true,
         'global': true,
+        'describe': true,
+        'afterEach': true,
+        'expect': true,
+        'it': true,
     },
     // 自定义规则
     rules: {

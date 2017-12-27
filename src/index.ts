@@ -122,14 +122,7 @@ export default {
             return this;
         };
 
-        App.prototype.triggerEvent = function(elem: HTMLElement, name: string, opts = {}) {
-            triggerEvent(elem, name, opts);
-            return this;
-        };
-
-        App.prototype.triggerDelegateEvent = function(elem: HTMLElement, name: string, opts = {}) {
-            triggerDelegateEvent(elem, name, opts);
-            return this;
-        };
+        App.prototype.triggerEvent = triggerEvent;
+        App.prototype.triggerDelegateEvent = triggerDelegateEvent;
     },
 };

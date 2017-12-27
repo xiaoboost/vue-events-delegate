@@ -14,7 +14,7 @@ declare module 'vue/types/vue' {
          * @param {DelegateCallback} fn
          * @param {Modifiers} [option]
          */
-        delegateOn(el: HTMLElement, type: string, fn: DelegateCallback, option?: Modifiers): this;
+        delegateOn(el: HTMLElement, type: string, fn: DelegateCallback, option?: Modifiers): void;
         /**
          * Attach an event handler function for a selected element with selector.
          * @param {HTMLElement} el
@@ -23,13 +23,13 @@ declare module 'vue/types/vue' {
          * @param {DelegateCallback} fn
          * @param {Modifiers} [option]
          */
-        delegateOn(el: HTMLElement, type: string, selector: string, fn: DelegateCallback, option?: Modifiers): this;
+        delegateOn(el: HTMLElement, type: string, selector: string, fn: DelegateCallback, option?: Modifiers): void;
 
         /**
          * Remove all events handler in the el.
          * @param {el} HTMLElement
          */
-        delegateOff(el: HTMLElement): this;
+        delegateOff(el: HTMLElement): void;
 
         /**
          * Remove all matching events handler in the el.
@@ -37,7 +37,7 @@ declare module 'vue/types/vue' {
          * @param {string} option - option can be type of event or selector that pass in .delegateOn()
          * @param {DelegateCallback} [fn]
          */
-        delegateOff(el: HTMLElement, option: string, fn?: DelegateCallback): this;
+        delegateOff(el: HTMLElement, option: string, fn?: DelegateCallback): void;
 
         /**
          * Remove all matching events handler in the el.
@@ -46,7 +46,7 @@ declare module 'vue/types/vue' {
          * @param {string} [selector]
          * @param {DelegateCallback} [fn]
          */
-        delegateOff(el: HTMLElement, type: string, selector?: string, fn?: DelegateCallback): this;
+        delegateOff(el: HTMLElement, type: string, selector?: string, fn?: DelegateCallback): void;
 
         /**
          * triggers a native event
@@ -55,7 +55,7 @@ declare module 'vue/types/vue' {
          * @param {string} name
          * @param {PartialEvent} [opts={}]
          */
-        triggerEvent(elem: HTMLElement, name: string, opts?: Options): this;
+        triggerEvent(elem: HTMLElement, name: string, opts?: Options): void;
 
         /**
          * triggers a delegate event
@@ -63,6 +63,6 @@ declare module 'vue/types/vue' {
          * @param {string} name
          * @param {PartialEvent} [opts={}]
          */
-        triggerDelegateEvent(elem: HTMLElement, name: string, opts?: Options): this;
+        triggerDelegateEvent(elem: HTMLElement, name: string, opts?: Options): void;
     }
 }
