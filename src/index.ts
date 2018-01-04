@@ -10,6 +10,22 @@ import { VNodeDirective } from 'vue/types/vnode';
 
 interface Modifiers { [key: string]: boolean; }
 
+interface DalegateOn {
+    el: HTMLElement;
+    type: string;
+    selector?: string;
+    fn: $Callback;
+    option?: Modifiers;
+}
+
+interface DalegateOff {
+    el: HTMLElement;
+    type?: string;
+    selector?: string;
+    fn?: $Callback;
+    capture?: boolean;
+}
+
 const functionMap = new Map<$Callback, $Callback>();
 
 /**
@@ -68,7 +84,7 @@ function fixType(type: string): string {
     const match = type && type.match(/^[a-z]+/i);
 
     if (!match) {
-        throw (new Error('Illegal Event'));
+        throw (new Error('(delegate) Illegal Event'));
     }
 
     return match[0];
@@ -81,8 +97,12 @@ function fixType(type: string): string {
  */
 function bind(el: HTMLElement, binding: VNodeDirective): void {
     const value = utils.isArray(binding.value) ? binding.value : ['', binding.value];
-
     const [selector, callback] = value as [string, $Callback];
+
+    if (utils.isNull(callback)) {
+        throw new Error('(delegate) must input callback');
+    }
+
     const handler = fnWrapper(callback, binding.modifiers, () => unbind(el, binding));
     const type = fixType(binding.arg);
 
@@ -96,7 +116,7 @@ function bind(el: HTMLElement, binding: VNodeDirective): void {
  * @param {VNodeDirective} binding
  */
 function unbind(el: HTMLElement, binding: VNodeDirective): void {
-    const value = utils.isArray(binding.value) ? binding.value : ['', binding.value];
+    const value = utils.isArray(binding.value) ? binding.value : ['*', binding.value];
 
     const [selector, callback] = value as [string, $Callback];
     const handler = functionMap.get(callback);
@@ -111,17 +131,27 @@ export default {
         App.directive('delegate', {
             bind,
             unbind,
-            // TODO: update event
         });
 
-        App.prototype.delegateOn = function(el: HTMLElement, type: string, selector: string | $Callback, fn: $Callback | Modifiers, option?: Modifiers) {
+        App.prototype.delegateOn = function({ el, type, selector = '', fn, option = {} }: DalegateOn) {
+            const handler = fnWrapper(fn, option, () => this.delegateOff({ el, type, selector, fn, capture: option.capture }));
 
-            return this;
+            functionMap.set(fn, handler);
+            add(el, type, selector, handler, option.capture || false);
         };
 
-        App.prototype.delegateOff = function(el: HTMLElement, type?: string, selector?: string, fn?: $Callback) {
+        App.prototype.delegateOff = (opt: HTMLElement | DalegateOff) => {
+            const { el, type, selector, fn, capture } = (opt instanceof Element)
+                ? { el: opt, type: '', selector: '*', fn: undefined, capture: undefined }
+                : opt;
 
-            return this;
+            const handler = fn ? functionMap.get(fn) : undefined;
+
+            if (fn) {
+                functionMap.delete(fn);
+            }
+
+            remove(el, type, selector, handler, capture);
         };
 
         App.prototype.triggerEvent = triggerEvent;
