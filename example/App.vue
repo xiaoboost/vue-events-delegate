@@ -16,6 +16,7 @@
     </div>
 
     <button @click="show = false">hidden the list</button>
+    <button @click="triggerNativeEvent">trigger native event</button>
 </main>
 </template>
 
@@ -42,6 +43,10 @@ export default class App extends Vue {
     }
     clickTexts4(e: DelegateEvent) {
         console.log('once event');
+    }
+    triggerNativeEvent() {
+        const elem = document.querySelector('.event-block__inner i') as HTMLElement;
+        this.triggerDelegateEvent(elem, 'click');
     }
 };
 </script>
