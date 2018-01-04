@@ -42,6 +42,7 @@ module.exports = {
                 options: {
                     transpileOnly: false,
                     appendTsSuffixTo: [/\.vue$/],
+                    configFile: resolve('example/tsconfig.json'),
                 },
             },
             {

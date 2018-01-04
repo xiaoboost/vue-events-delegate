@@ -10,14 +10,14 @@ module.exports = {
         filename: 'build.js',
     },
     resolve: {
-        extensions: ['.js', '.ts'],
+        extensions: ['.ts', '.js'],
         mainFiles: ['index.ts'],
         alias: {
             'vue$': 'vue/dist/vue.esm.js',
         },
     },
     plugins: [],
-    devtool: 'source-map',
+    devtool: '#inline-source-map',
     module: {
         rules: [
             {
@@ -27,8 +27,8 @@ module.exports = {
                 options: {
                     typeCheck: true,
                     emitErrors: true,
-                    configFile: './tslint.json',
-                    tsConfigFile: './test/tsconfig.json',
+                    configFile: resolve('tslint.json'),
+                    tsConfigFile: resolve('test/tsconfig.json'),
                     include: [resolve('test'), resolve('src')],
                     formattersDirectory: 'node_modules/tslint-loader/formatters/',
                 },
@@ -39,6 +39,8 @@ module.exports = {
                 exclude: /node_modules/,
                 options: {
                     transpileOnly: false,
+                    // FIXME: Error: files is empty
+                    // configFile: resolve('test/tsconfig.json'),
                 },
             },
         ],
