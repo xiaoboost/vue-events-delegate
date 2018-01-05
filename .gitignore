@@ -7,3 +7,4 @@ npm-debug.log
 example/build.js*
 src/*.js
 test/coverage/*
+test/_*
