@@ -11,6 +11,9 @@ module.exports = (config) => config.set({
     frameworks: ['mocha', 'sinon-chai'],
     reporters: ['spec', 'coverage'],
     files: ['./index.js'],
+    client: {
+        captureConsole: false,
+    },
     preprocessors: {
         './index.js': ['webpack', 'sourcemap'],
     },
