@@ -84,6 +84,7 @@ export function triggerDelegateEvent(elem: HTMLElement, type: string, opts: Part
 
     path.forEach((dom) => {
         setEventProperty(nativeEvent, 'currentTarget', dom);
+        // FIXME: Is it really possible to use the dispatch function directly here?
         dispatch(dom, nativeEvent);
     });
 }
