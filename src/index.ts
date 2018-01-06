@@ -155,6 +155,6 @@ export default {
         };
 
         App.prototype.triggerEvent = triggerEvent;
-        App.prototype.triggerDelegateEvent = triggerDelegateEvent;
+        App.prototype.trigger$Event = triggerDelegateEvent;
     },
 };

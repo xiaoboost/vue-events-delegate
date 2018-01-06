@@ -56,6 +56,6 @@ declare module 'vue/types/vue' {
          * @param {string} name
          * @param {PartialEvent} [opts={}]
          */
-        triggerDelegateEvent(elem: HTMLElement, name: string, opts?: Options): void;
+        trigger$Event(elem: HTMLElement, name: string, opts?: Options): void;
     }
 }
