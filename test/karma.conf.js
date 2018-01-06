@@ -9,7 +9,7 @@
 module.exports = (config) => config.set({
     browsers: ['headlessChrome'],
     frameworks: ['mocha', 'sinon-chai'],
-    reporters: ['spec', 'coverage'],
+    reporters: ['spec'], // coverage
     files: ['./index.js'],
     client: {
         captureConsole: false,
@@ -20,13 +20,13 @@ module.exports = (config) => config.set({
     webpack: require('./webpack.config'),
     webpackMiddleware: { noInfo: true },
     // FIXME: coverage does not work
-    coverageReporter: {
-        dir: './coverage',
-        reporters: [
-            { type: 'lcov', subdir: '.' },
-            { type: 'text-summary' },
-        ],
-    },
+    // coverageReporter: {
+    //     dir: './coverage',
+    //     reporters: [
+    //         { type: 'lcov', subdir: '.' },
+    //         { type: 'text-summary' },
+    //     ],
+    // },
     customLaunchers: {
         'headlessChrome': {
             base: 'Chrome',
