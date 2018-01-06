@@ -30,8 +30,14 @@ const configs = [
         env: 'production',
     },
     {
-        file: resolve(`dist/${project.name}.common.js`),
+        file: resolve(`dist/${project.name}.esm.js`),
         format: 'cjs',
+        env: 'development',
+    },
+    {
+        file: resolve(`dist/${project.name}.esm.min.js`),
+        format: 'cjs',
+        env: 'production',
     },
 ];
 
