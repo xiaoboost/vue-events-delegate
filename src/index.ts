@@ -67,7 +67,7 @@ export function fnWrapper(callback: $Callback, modifiers: Modifiers, once?: () =
                 event.preventDefault();
             }
             if (modifiers.once && once) {
-                setTimeout(once);
+                once();
             }
 
             return ans;

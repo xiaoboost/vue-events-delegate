@@ -99,3 +99,97 @@ describe('null or undefined handler', () => {
         }
     });
 });
+
+describe('multiple events at once', () => {
+    it('once as a modifier in templete', () => {
+        vm = createVue({
+            template: `
+                <div v-delegate:click.once="['.a', onClick]">
+                    <div>
+                        <div class="a"></div>
+                    </div>
+                </div>`,
+            data() {
+                return {
+                    click: 0,
+                };
+            },
+            methods: {
+                onClick() {
+                    this.click++;
+                },
+            },
+        });
+
+        const elm = vm.$el.querySelector('.a');
+
+        expect(vm.click).to.equal(0);
+        vm.triggerEvent(elm, 'click');
+        expect(vm.click).to.equal(1);
+        vm.triggerEvent(elm, 'click');
+        expect(vm.click).to.equal(1);
+    });
+    it('once as a option that pass in .delegateOn()', () => {
+        vm = createVue({
+            template: '<div><div><div class="a"></div></div></div>',
+            data() {
+                return {
+                    click: 0,
+                };
+            },
+            methods: {
+                onClick() {
+                    this.click++;
+                },
+            },
+        });
+
+        const elm = vm.$el.querySelector('.a');
+
+        vm.delegateOn({
+            el: vm.$el,
+            type: 'click',
+            selector: '.a',
+            fn: vm.onClick,
+            option: { once: true },
+        });
+
+        expect(vm.click).to.equal(0);
+        vm.triggerEvent(elm, 'click');
+        expect(vm.click).to.equal(1);
+        vm.triggerEvent(elm, 'click');
+        expect(vm.click).to.equal(1);
+    });
+});
+
+describe('order of all events running', () => {
+    const template = {
+        template: `
+            <div
+                v-delegate:click="['*', clickPop]
+                v-delegate:click.capture="['*', clickCap]>
+                <div><p><span><b class='a'>b</b></span></p></div>
+            </div>`,
+        data() {
+            return {
+                path: [],
+            };
+        },
+        methods: {
+            clickPop(ev) {
+                this.path.push('pop:' + ev.currentTarget.nodeName.toLowerCase());
+            },
+            clickCap(ev) {
+                this.path.push('cap:' + ev.currentTarget.nodeName.toLowerCase());
+            },
+        },
+    };
+
+    it('order of delegate event\'s is same as origin event callback.', () => {
+        vm = createVue(template);
+
+        const elm = vm.$el.querySelector('.a');
+        vm.triggerEvent(elm, 'click');
+        expect(vm.path.join(',')).to.equal('');
+    });
+});
