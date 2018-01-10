@@ -163,33 +163,70 @@ describe('multiple events at once', () => {
 });
 
 describe('order of all events running', () => {
-    const template = {
-        template: `
-            <div
-                v-delegate:click="['*', clickPop]
-                v-delegate:click.capture="['*', clickCap]>
-                <div><p><span><b class='a'>b</b></span></p></div>
-            </div>`,
-        data() {
-            return {
-                path: [],
-            };
-        },
-        methods: {
-            clickPop(ev) {
-                this.path.push('pop:' + ev.currentTarget.nodeName.toLowerCase());
-            },
-            clickCap(ev) {
-                this.path.push('cap:' + ev.currentTarget.nodeName.toLowerCase());
-            },
-        },
-    };
-
     it('order of delegate event\'s is same as origin event callback.', () => {
-        vm = createVue(template);
+        vm = createVue({
+            template: `
+                <div
+                    v-delegate:click="['*', clickPop]"
+                    v-delegate:click.capture="['*', clickCap]">
+                    <div><p><span><b class='a'>b</b></span></p></div>
+                </div>`,
+            data() {
+                return {
+                    path: [],
+                };
+            },
+            methods: {
+                clickPop(ev) {
+                    this.path.push('pop:' + ev.currentTarget.nodeName.toLowerCase());
+                },
+                clickCap(ev) {
+                    this.path.push('cap:' + ev.currentTarget.nodeName.toLowerCase());
+                },
+            },
+        });
 
         const elm = vm.$el.querySelector('.a');
         vm.triggerEvent(elm, 'click');
-        expect(vm.path.join(',')).to.equal('');
+        expect(vm.path.join(', ')).to.equal('cap:div, cap:p, cap:span, cap:b, pop:b, pop:span, pop:p, pop:div');
+    });
+
+    it('order of mix events', () => {
+        const path = [];
+
+        vm = createVue({
+            template: `
+                <div
+                    v-delegate:click="['*', clickPop]"
+                    v-delegate:click.capture="['*', clickCap]">
+                    <div><p><span><b class='a'>b</b></span></p></div>
+                </div>`,
+            methods: {
+                clickPop(ev) {
+                    path.push('$$pop:' + ev.currentTarget.nodeName.toLowerCase());
+                },
+                clickCap(ev) {
+                    path.push('$$cap:' + ev.currentTarget.nodeName.toLowerCase());
+                },
+            },
+        });
+
+        const elm = vm.$el.querySelector('.a');
+        const nodes = [].slice.call(vm.$el.querySelectorAll('*'));
+
+        nodes.forEach((el) => {
+            el.addEventListener('click', (ev) => {
+                path.push('pop:' + ev.currentTarget.nodeName.toLowerCase());
+            });
+            el.addEventListener('click', (ev) => {
+                path.push('cap:' + ev.currentTarget.nodeName.toLowerCase());
+            }, true);
+        });
+
+        vm.triggerEvent(elm, 'click');
+        expect(path.join(', ')).to.equal(
+            '$$cap:div, $$cap:p, $$cap:span, $$cap:b, cap:div, cap:p, cap:span, ' +
+            'pop:b, cap:b, pop:span, pop:p, pop:div, $$pop:b, $$pop:span, $$pop:p, $$pop:div'
+        );
     });
 });
