@@ -90,6 +90,8 @@ function paserSelector(all: string): SelectorParsed[] {
  */
 function isContains(delegate: HTMLElement, elem: HTMLElement, handler: HandlerEnv): boolean {
     // dom has been in selector cache
+    // FIXME: 已经被移除，但还存在缓存中的 dom 怎么办？
+    // 可以考虑使用 weakset，但是兼容性怎么办？
     if (handler.matches.includes(elem)) {
         return (true);
     }
