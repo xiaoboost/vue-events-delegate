@@ -145,8 +145,12 @@ function tohandlers(event: $Event, handlers: HandlerEnv[]): HandlerQueueObj[] {
 
         handlerQueue.push(
             ...handlers
-                .filter((n) => n.selector && n.capture === capture && isContains(elem, dom, n))
-                .map((n) => ({ element: dom, environment: n })),
+                .filter(
+                    (env) =>
+                        (dom === elem && !env.selector) ||
+                        (env.capture === capture && isContains(elem, dom, env)),
+                )
+                .map((env) => ({ element: dom, environment: env })),
         );
     }
 
@@ -164,6 +168,7 @@ function tohandlers(event: $Event, handlers: HandlerEnv[]): HandlerQueueObj[] {
  * @param {Event} args
  */
 export function dispatch(elem: HTMLElement, origin: Event): void {
+    debugger;
     const event = new $Event(origin);
     const elemData = $Cache.get(elem);
     const elemEvents = elemData && elemData.events;

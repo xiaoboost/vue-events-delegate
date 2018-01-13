@@ -230,3 +230,42 @@ describe('order of all events running', () => {
         );
     });
 });
+
+describe('delegate event without selector', () => {
+    it('use in template', () => {
+        vm = createVue({
+            template: '<div v-delegate:click="onClick"><p><span></span></p></div>',
+            data() {
+                return {
+                    click: 0,
+                };
+            },
+            methods: {
+                onClick() {
+                    this.click++;
+                },
+            },
+        });
+
+        vm.triggerEvent(vm.$el, 'click');
+        expect(vm.click).to.equal(1);
+        vm.trigger$Event(vm.$el, 'click');
+        expect(vm.click).to.equal(2);
+    });
+    it('use in .delegateOn()', () => {
+        vm = createVue({ template: '<div><p><span></span></p></div>' });
+
+        let click = 0;
+
+        vm.delegateOn({
+            el: vm.$el,
+            type: 'click',
+            fn: () => click++,
+        });
+
+        vm.triggerEvent(vm.$el, 'click');
+        expect(click).to.equal(1);
+        vm.trigger$Event(vm.$el, 'click');
+        expect(click).to.equal(2);
+    });
+});
