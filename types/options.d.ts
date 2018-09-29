@@ -16,4 +16,5 @@ export interface Modifiers {
     stop: boolean;
     prevent: boolean;
     capture: boolean;
+    passive: boolean;
 }

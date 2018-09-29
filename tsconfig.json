@@ -6,6 +6,8 @@
         "sourceMap": false,
         // 以严格模式解析
         "strict": true,
+        // 类属性允许不初始化
+        "strictPropertyInitialization": false,
         // 采用的模块系统
         "module": "es2015",
         // 如何处理模块
